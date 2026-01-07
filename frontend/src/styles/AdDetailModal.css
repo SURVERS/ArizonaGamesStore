@@ -1,0 +1,382 @@
+.ad-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ad-detail-modal {
+  background: #222222;
+  border-radius: 16px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid #DF3535;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ad-detail-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(223, 53, 53, 0.2);
+  border: 2px solid #DF3535;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-detail-close:hover {
+  background: #DF3535;
+  transform: rotate(90deg);
+}
+
+.ad-detail-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+.ad-detail-image-section {
+  width: 100%;
+}
+
+.ad-detail-image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #474747;
+}
+
+.ad-detail-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ad-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 15px;
+}
+
+.ad-detail-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.ad-detail-type {
+  background: #DF3535;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ad-detail-price-block {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+}
+
+.ad-detail-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ad-detail-price-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #DF3535;
+}
+
+.ad-detail-price-currency {
+  font-size: 16px;
+  color: #B0B0B0;
+  font-weight: 600;
+}
+
+.ad-detail-price-period {
+  font-size: 14px;
+  color: #888888;
+  font-style: italic;
+  margin-left: 4px;
+}
+
+.ad-detail-price-free {
+  font-size: 18px;
+  color: #888888;
+  font-weight: 600;
+}
+
+.ad-detail-description {
+  padding: 15px;
+  background: #18181A;
+  border-radius: 12px;
+  border: 1px solid #474747;
+}
+
+.ad-detail-description h3 {
+  font-size: 18px;
+  color: #DF3535;
+  margin: 0 0 12px 0;
+}
+
+.ad-detail-description p {
+  font-size: 15px;
+  color: #B0B0B0;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.ad-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #18181A;
+  border-radius: 12px;
+  border: 1px solid #474747;
+}
+
+.ad-detail-meta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ad-detail-meta-label {
+  font-size: 14px;
+  color: #B0B0B0;
+  font-weight: 600;
+}
+
+.ad-detail-meta-value {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ad-detail-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #18181A;
+  border-radius: 12px;
+  border: 1px solid #474747;
+}
+
+.ad-detail-author-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #DF3535;
+  box-shadow: 0 0 15px rgba(223, 53, 53, 0.3);
+}
+
+.ad-detail-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ad-detail-author-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #DF3535;
+}
+
+.ad-detail-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: auto;
+}
+
+.ad-detail-action-btn {
+  flex: 1;
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.primary-btn {
+  background: #DF3535;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(223, 53, 53, 0.3);
+}
+
+.primary-btn:hover {
+  background: #FF4545;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(223, 53, 53, 0.5);
+}
+
+.manage-btn {
+  background: #2196F3;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.manage-btn:hover {
+  background: #42A5F5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.5);
+}
+
+.cancel-btn {
+  background: #474747;
+  color: #fff;
+}
+
+.cancel-btn:hover {
+  background: #5A5A5A;
+  transform: translateY(-2px);
+}
+
+
+body.light-theme .ad-detail-modal {
+  background: #FFFFFF;
+  border: 2px solid #DF3535;
+}
+
+body.light-theme .ad-detail-close {
+  background: rgba(223, 53, 53, 0.1);
+}
+
+body.light-theme .ad-detail-title {
+  color: #1A1A1A;
+}
+
+body.light-theme .ad-detail-image {
+  border: 2px solid #E0E0E0;
+}
+
+body.light-theme .ad-detail-description {
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+}
+
+body.light-theme .ad-detail-description h3 {
+  color: #DF3535;
+}
+
+body.light-theme .ad-detail-description p {
+  color: #666666;
+}
+
+body.light-theme .ad-detail-meta {
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+}
+
+body.light-theme .ad-detail-meta-label {
+  color: #666666;
+}
+
+body.light-theme .ad-detail-meta-value {
+  color: #1A1A1A;
+}
+
+body.light-theme .ad-detail-author {
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+}
+
+body.light-theme .ad-detail-author-name {
+  color: #DF3535;
+}
+
+body.light-theme .cancel-btn {
+  background: #E0E0E0;
+  color: #1A1A1A;
+}
+
+body.light-theme .cancel-btn:hover {
+  background: #CCCCCC;
+}
+
+
+@media (max-width: 768px) {
+  .ad-detail-content {
+    grid-template-columns: 1fr;
+  }
+
+  .ad-detail-image {
+    height: 300px;
+  }
+
+  .ad-detail-title {
+    font-size: 22px;
+  }
+
+  .ad-detail-price-value {
+    font-size: 26px;
+  }
+
+  .ad-detail-actions {
+    flex-direction: column;
+  }
+
+  .ad-detail-action-btn {
+    width: 100%;
+  }
+}

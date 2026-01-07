@@ -1,0 +1,39 @@
+.snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10%;
+  color: #fff;
+  user-select: none;
+  cursor: default;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    top: -10%;
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
+    top: 110%;
+    transform: translateX(100px) rotate(360deg);
+  }
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
