@@ -20,6 +20,18 @@ type ResendCodeRequest struct {
 	Email string `json:"email" binding:"required,email"`
 }
 
+// VerifyEmail godoc
+// @Summary Подтвердить email
+// @Description Подтверждает email пользователя после регистрации. Нужно ввести код который пришел на почту. После подтверждения сразу логинит пользователя и выдает токены
+// @Tags Аутентификация
+// @Accept json
+// @Produce json
+// @Param request body VerifyEmailRequest true "Email и код подтверждения"
+// @Success 200 {object} map[string]interface{} "Email подтвержден! Добро пожаловать в Arizona Games Store"
+// @Failure 400 {object} map[string]string "Неверный код или он уже истек (коды живут 10 минут)"
+// @Failure 403 {object} map[string]string "Регистрация заблокирована (превышен лимит с одного IP)"
+// @Failure 500 {object} map[string]string "Ошибка создания аккаунта или генерации токенов"
+// @Router /verify-email [post]
 func VerifyEmail(c *gin.Context) {
 	var req VerifyEmailRequest
 
@@ -116,6 +128,17 @@ func VerifyEmail(c *gin.Context) {
 	})
 }
 
+// ResendVerificationCode godoc
+// @Summary Отправить код повторно
+// @Description Отправляет новый код подтверждения на email. Нужно если предыдущий код истек (они живут 10 минут) или потерялся. Генерирует новый код и сразу отправляет на почту
+// @Tags Аутентификация
+// @Accept json
+// @Produce json
+// @Param request body ResendCodeRequest true "Email для отправки нового кода"
+// @Success 200 {object} map[string]string "Новый код отправлен! Проверь почту (и спам тоже)"
+// @Failure 400 {object} map[string]string "Email не найден или уже подтвержден"
+// @Failure 500 {object} map[string]string "Ошибка отправки email"
+// @Router /resend-code [post]
 func ResendVerificationCode(c *gin.Context) {
 	var req ResendCodeRequest
 

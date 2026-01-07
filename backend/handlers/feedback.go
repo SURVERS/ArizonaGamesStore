@@ -13,7 +13,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreateFeedback создает новый отзыв на объявление
+// CreateFeedback godoc
+// @Summary Оставить отзыв
+// @Description Оставляет отзыв о продавце. Рейтинг от 1 до 5 звезд. Отзыв нужно подтвердить продавцу, чтобы он отобразился
+// @Tags Отзывы
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]interface{} true "Данные отзыва"
+// @Success 200 {object} map[string]interface{} "Отзыв отправлен! Ждем подтверждения продавца"
+// @Failure 400 {object} map[string]string "Некорректный рейтинг или комментарий"
+// @Failure 401 {object} map[string]string "Нужна авторизация"
+// @Failure 409 {object} map[string]string "Ты уже оставлял отзыв этому продавцу"
+// @Failure 500 {object} map[string]string "Ошибка сохранения"
+// @Router /feedback [post]
 func CreateFeedback(c *gin.Context) {
 	reviewerNickname, exists := c.Get("nickname")
 	if !exists {
@@ -114,7 +127,15 @@ func CreateFeedback(c *gin.Context) {
 	})
 }
 
-// GetFeedbacksByOwner получает все подтвержденные отзывы для владельца объявления
+// GetFeedbacksByOwner godoc
+// @Summary Отзывы продавца
+// @Description Возвращает все отзывы о продавце
+// @Tags Отзывы
+// @Produce json
+// @Param nickname path string true "Никнейм продавца"
+// @Success 200 {object} map[string]interface{} "Список отзывов"
+// @Failure 500 {object} map[string]string "Ошибка загрузки"
+// @Router /feedback/{nickname} [get]
 func GetFeedbacksByOwner(c *gin.Context) {
 	ownerNickname := c.Param("nickname")
 
@@ -135,7 +156,19 @@ func GetFeedbacksByOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"feedbacks": feedbacks})
 }
 
-// ConfirmFeedback подтверждает отзыв (для админов)
+// ConfirmFeedback godoc
+// @Summary Подтвердить отзыв
+// @Description Подтверждает отзыв. Только продавец может подтвердить отзыв о себе. После подтверждения рейтинг пересчитывается
+// @Tags Отзывы
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "ID отзыва"
+// @Success 200 {object} map[string]string "Отзыв подтвержден! Твой рейтинг обновлен"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 403 {object} map[string]string "Ты не можешь подтвердить этот отзыв"
+// @Failure 404 {object} map[string]string "Отзыв не найден"
+// @Failure 500 {object} map[string]string "Ошибка подтверждения"
+// @Router /feedback/{id}/confirm [put]
 func ConfirmFeedback(c *gin.Context) {
 	feedbackID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -164,7 +197,19 @@ func ConfirmFeedback(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Отзыв подтвержден"})
 }
 
-// AddViewedAd добавляет просмотренное объявление
+// AddViewedAd godoc
+// @Summary Добавить в историю
+// @Description Добавляет объявление в историю просмотров пользователя
+// @Tags Просмотренное
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]int true "ID объявления" example(ad_id=42)
+// @Success 200 {object} map[string]string "Добавлено в историю"
+// @Failure 400 {object} map[string]string "Не указан ID"
+// @Failure 401 {object} map[string]string "Нужна авторизация"
+// @Failure 500 {object} map[string]string "Ошибка сохранения"
+// @Router /viewed-ads [post]
 func AddViewedAd(c *gin.Context) {
 	userNickname, exists := c.Get("nickname")
 	if !exists {
@@ -214,7 +259,16 @@ func AddViewedAd(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Объявление добавлено в просмотренные"})
 }
 
-// GetViewedAds получает все просмотренные объявления пользователя
+// GetViewedAds godoc
+// @Summary История просмотров
+// @Description Возвращает историю просмотренных объявлений пользователя
+// @Tags Просмотренное
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Список просмотренных объявлений"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка загрузки"
+// @Router /viewed-ads [get]
 func GetViewedAds(c *gin.Context) {
 	userNickname, exists := c.Get("nickname")
 	if !exists {

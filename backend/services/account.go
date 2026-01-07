@@ -167,6 +167,19 @@ func validatePassword(password string) (bool, string) {
 	return true, ""
 }
 
+// RegisterAccount godoc
+// @Summary Регистрация
+// @Description Создает нового пользователя. Сразу после регистрации на почту придет код подтверждения. Пароль должен быть минимум 8 символов, иначе хакеры взломают за 5 минут
+// @Tags Аутентификация
+// @Accept json
+// @Produce json
+// @Param request body RegisterRequest true "Данные для регистрации"
+// @Success 201 {object} map[string]interface{} "Аккаунт создан! Проверь почту и введи код подтверждения"
+// @Failure 400 {object} map[string]string "Не хватает данных или формат неправильный"
+// @Failure 409 {object} map[string]string "Такой ник или email уже занят, придумай другой"
+// @Failure 429 {object} map[string]string "Слишком много попыток, подожди немного"
+// @Failure 500 {object} map[string]string "Что-то сломалось на сервере, пишите в поддержку"
+// @Router /register [post]
 func RegisterAccount(c *gin.Context) {
 	var req RegisterRequest
 

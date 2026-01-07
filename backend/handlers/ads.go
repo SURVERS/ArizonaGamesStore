@@ -28,6 +28,29 @@ type NewAddsRequest struct {
 	ImagePath        string  `form:"imagePath" binding:"required"`
 }
 
+// CreateNewAds godoc
+// @Summary Создать объявление
+// @Description Создает новое объявление с картинкой. Картинка загружается на AWS S3. После создания объявление автоматически удалится через 48 часов (можно продлить). Между созданиями объявлений нужно ждать 60 секунд
+// @Tags Объявления
+// @Accept multipart/form-data
+// @Produce json
+// @Param server formData string true "Сервер (ViceCity, Phoenix, и т.д.)"
+// @Param title formData string true "Название (макс. 25 символов)"
+// @Param description formData string true "Описание (макс. 500 символов)"
+// @Param type formData string true "Тип (Продать/Купить/Сдать в аренду)"
+// @Param currency formData string true "Валюта (VC/$/BTC/EURO/Договорная)"
+// @Param price formData number true "Цена"
+// @Param category formData string true "Категория (house/business/vehicle/security/accs/others)"
+// @Param nickname formData string true "Никнейм автора"
+// @Param imagePath formData string true "Путь для сохранения картинки"
+// @Param image formData file true "Изображение (макс. 10MB, разрешение 300x200 - 1920x1080)"
+// @Param rentalHoursLimit formData int false "Лимит часов аренды (1-180)"
+// @Success 200 {object} map[string]interface{} "Объявление создано! ID: 42"
+// @Failure 400 {object} map[string]string "Не хватает данных или картинка кривая"
+// @Failure 413 {object} map[string]string "Картинка слишком большая (макс. 10MB)"
+// @Failure 429 {object} map[string]string "Подожди 60 секунд перед созданием нового объявления"
+// @Failure 500 {object} map[string]string "Ошибка загрузки на S3 или БД"
+// @Router /createnewads [post]
 func CreateNewAds(c *gin.Context) {
 	var req NewAddsRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -107,7 +130,24 @@ func CreateNewAds(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Объявление успешно создано"})
 }
 
-// GetAdsByCategory обработчик для получения объявлений по категории
+// GetAdsByCategory godoc
+// @Summary Список объявлений
+// @Description Возвращает список объявлений с фильтрацией и сортировкой. По умолчанию возвращает 20 штук, можно подгружать дальше через offset
+// @Tags Объявления
+// @Produce json
+// @Param category query string true "Категория" Enums(house, business, vehicle, security, accs, others)
+// @Param server query string false "Фильтр по серверу"
+// @Param limit query int false "Сколько объявлений вернуть (по умолчанию 20)"
+// @Param offset query int false "Сколько пропустить для пагинации (по умолчанию 0)"
+// @Param sort query string false "Сортировка" Enums(date_desc, date_asc, price_desc, price_asc, views_desc)
+// @Param type query string false "Фильтр по типу" Enums(Продать, Купить, Сдать в аренду)
+// @Param currency query string false "Фильтр по валюте" Enums(VC, $, BTC, EURO, Договорная)
+// @Param price_min query number false "Минимальная цена"
+// @Param price_max query number false "Максимальная цена"
+// @Success 200 {object} map[string]interface{} "Список объявлений"
+// @Failure 400 {object} map[string]string "Не указана категория"
+// @Failure 500 {object} map[string]string "Ошибка БД"
+// @Router /ads [get]
 func GetAdsByCategory(c *gin.Context) {
 	category := c.Query("category")
 	server := c.Query("server")
@@ -157,7 +197,15 @@ func GetAdsByCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ads": ads})
 }
 
-// GetAdsByNickname обработчик для получения объявлений пользователя
+// GetAdsByNickname godoc
+// @Summary Объявления по нику
+// @Description Возвращает все объявления конкретного пользователя
+// @Tags Объявления
+// @Produce json
+// @Param nickname path string true "Никнейм пользователя"
+// @Success 200 {object} map[string]interface{} "Список объявлений пользователя"
+// @Failure 500 {object} map[string]string "Ошибка БД"
+// @Router /listings/user/{nickname} [get]
 func GetAdsByNickname(c *gin.Context) {
 	nickname := c.Param("nickname")
 
@@ -178,7 +226,20 @@ func GetAdsByNickname(c *gin.Context) {
 	})
 }
 
-// CreateReport обработчик для создания жалобы на объявление
+// CreateReport godoc
+// @Summary Пожаловаться на объявление
+// @Description Отправляет жалобу на объявление. Причины: Мошенничество, Спам, Порнография, и т.д. Жалобы проверяются модераторами
+// @Tags Жалобы
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]interface{} true "Данные жалобы"
+// @Success 200 {object} map[string]string "Жалоба отправлена! Мы её рассмотрим"
+// @Failure 400 {object} map[string]string "Не указана причина или описание слишком короткое"
+// @Failure 401 {object} map[string]string "Залогинься чтобы жаловаться"
+// @Failure 404 {object} map[string]string "Объявление не найдено"
+// @Failure 500 {object} map[string]string "Ошибка создания жалобы"
+// @Router /reports [post]
 func CreateReport(c *gin.Context) {
 	var req struct {
 		AdID        uint    `json:"ad_id" binding:"required"`
@@ -208,7 +269,14 @@ func CreateReport(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Жалоба успешно отправлена"})
 }
 
-// GetRandomAds обработчик для получения рандомных объявлений из разных категорий
+// GetRandomAds godoc
+// @Summary Случайные объявления
+// @Description Возвращает 8 случайных объявлений для главной страницы. Каждый раз разные!
+// @Tags Объявления
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Массив случайных объявлений"
+// @Failure 500 {object} map[string]string "Что-то пошло не так"
+// @Router /ads/random [get]
 func GetRandomAds(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "15")
 	offsetStr := c.DefaultQuery("offset", "0")
@@ -232,7 +300,22 @@ func GetRandomAds(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ads": ads})
 }
 
-// UpdateAd обновляет объявление
+// UpdateAd godoc
+// @Summary Обновить объявление
+// @Description Обновляет данные объявления. Доступно только автору объявления
+// @Tags Объявления
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "ID объявления"
+// @Param request body map[string]interface{} true "Новые данные"
+// @Success 200 {object} map[string]interface{} "Объявление обновлено!"
+// @Failure 400 {object} map[string]string "Некорректные данные"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 403 {object} map[string]string "Это не твое объявление!"
+// @Failure 404 {object} map[string]string "Объявление не найдено"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /ads/{id} [put]
 func UpdateAd(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -315,7 +398,19 @@ func UpdateAd(c *gin.Context) {
 	})
 }
 
-// DeleteAd удаляет объявление
+// DeleteAd godoc
+// @Summary Удалить объявление
+// @Description Удаляет объявление. Доступно только автору
+// @Tags Объявления
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "ID объявления"
+// @Success 200 {object} map[string]string "Объявление удалено!"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 403 {object} map[string]string "Это не твое объявление!"
+// @Failure 404 {object} map[string]string "Объявление не найдено"
+// @Failure 500 {object} map[string]string "Ошибка удаления"
+// @Router /ads/{id} [delete]
 func DeleteAd(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -355,7 +450,16 @@ func DeleteAd(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Объявление успешно удалено"})
 }
 
-// IncrementAdViews увеличивает счетчик просмотров объявления
+// IncrementAdViews godoc
+// @Summary Записать просмотр
+// @Description Увеличивает счетчик просмотров объявления. Вызывай когда пользователь открывает карточку объявления
+// @Tags Объявления
+// @Produce json
+// @Param id path int true "ID объявления"
+// @Success 200 {object} map[string]string "Просмотр засчитан!"
+// @Failure 404 {object} map[string]string "Объявление не найдено"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /ads/{id}/view [post]
 func IncrementAdViews(c *gin.Context) {
 	adID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

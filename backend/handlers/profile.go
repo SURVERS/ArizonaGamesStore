@@ -11,6 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// UpdateProfileBackground godoc
+// @Summary Изменить фон профиля
+// @Description Загружает новый фон для профиля на S3. Макс. размер 10MB
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept multipart/form-data
+// @Produce json
+// @Param background formData file true "Изображение фона"
+// @Success 200 {object} map[string]string "URL нового фона"
+// @Failure 400 {object} map[string]string "Файл не загружен или слишком большой"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка загрузки на S3"
+// @Router /profile/update-background [post]
 func UpdateProfileBackground(c *gin.Context) {
 	// Получаем nickname из контекста
 	nickname, exists := c.Get("nickname")
@@ -98,7 +111,16 @@ func UpdateProfileBackground(c *gin.Context) {
 	})
 }
 
-// Удаление фона профиля
+// DeleteProfileBackground godoc
+// @Summary Удалить фон
+// @Description Удаляет фон профиля
+// @Tags Профиль
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]string "Фон удален!"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка удаления"
+// @Router /profile/delete-background [delete]
 func DeleteProfileBackground(c *gin.Context) {
 	// Получаем nickname из контекста
 	nickname, exists := c.Get("nickname")
@@ -140,7 +162,19 @@ func DeleteProfileBackground(c *gin.Context) {
 	})
 }
 
-// UpdateTelegram обновляет telegram пользователя
+// UpdateTelegram godoc
+// @Summary Изменить Telegram
+// @Description Обновляет Telegram контакт. Макс. 50 символов
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Telegram" example(telegram="@coolgamer")
+// @Success 200 {object} map[string]string "Telegram обновлен!"
+// @Failure 400 {object} map[string]string "Telegram слишком длинный"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-telegram [put]
 func UpdateTelegram(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {

@@ -18,6 +18,19 @@ type LoginRequest struct {
 	ClientIP       string `json:"client_ip"`
 }
 
+// Login godoc
+// @Summary Вход в аккаунт
+// @Description Авторизация пользователя. Возвращает JWT токены (access для запросов + refresh для продления сессии). Токены сохраняются в HTTP-only cookies для безопасности
+// @Tags Аутентификация
+// @Accept json
+// @Produce json
+// @Param request body LoginRequest true "Никнейм и пароль"
+// @Success 200 {object} map[string]interface{} "Авторизация успешна! Добро пожаловать обратно"
+// @Failure 400 {object} map[string]string "Не хватает данных (никнейм или пароль)"
+// @Failure 401 {object} map[string]string "Неверный никнейм или пароль, попробуй еще раз"
+// @Failure 429 {object} map[string]string "Слишком много попыток входа, подожди немного"
+// @Failure 500 {object} map[string]string "Ошибка сервера при генерации токенов"
+// @Router /login [post]
 func Login(c *gin.Context) {
 	var req LoginRequest
 
@@ -96,6 +109,15 @@ func Login(c *gin.Context) {
 	})
 }
 
+// RefreshAccessToken godoc
+// @Summary Обновить токен
+// @Description Обновляет access токен используя refresh токен. Вызывай этот эндпоинт когда access токен истек (обычно через 3 минуты). Refresh токен живет 30 дней
+// @Tags Аутентификация
+// @Produce json
+// @Success 200 {object} map[string]string "Токен обновлен! Можешь продолжать работать"
+// @Failure 401 {object} map[string]string "Refresh токен не найден, истек или невалидный. Нужно заново залогиниться"
+// @Failure 500 {object} map[string]string "Ошибка генерации нового токена"
+// @Router /refresh [post]
 func RefreshAccessToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil || refreshToken == "" {
@@ -129,6 +151,13 @@ func RefreshAccessToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Токен обновлен"})
 }
 
+// Logout godoc
+// @Summary Выход
+// @Description Выход из аккаунта. Удаляет refresh токен из БД и чистит cookies. После этого все запросы будут отклонены, пока не залогинишься заново
+// @Tags Аутентификация
+// @Produce json
+// @Success 200 {object} map[string]string "Успешный выход! До встречи"
+// @Router /logout [post]
 func Logout(c *gin.Context) {
 	refreshToken, _ := c.Cookie("refresh_token")
 

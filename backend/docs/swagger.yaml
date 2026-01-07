@@ -1,0 +1,1358 @@
+basePath: /api
+definitions:
+  services.LoginRequest:
+    properties:
+      client_ip:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      recaptcha_token:
+        type: string
+    required:
+    - nickname
+    - password
+    type: object
+  services.RegisterRequest:
+    properties:
+      email:
+        type: string
+      nickname:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      recaptcha_token:
+        type: string
+    required:
+    - email
+    - nickname
+    - password
+    type: object
+  services.ResendCodeRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  services.VerifyEmailRequest:
+    properties:
+      client_ip:
+        type: string
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@arizonagamesstore.com
+    name: Поддержка
+  description: |-
+    API для игрового маркетплейса Arizona RP. Здесь можно купить/продать/арендовать дома, бизнесы, транспорт и всякую другую всячину. Работает на 33 серверах, поддерживает несколько валют и умеет в рейтинги продавцов.
+
+    Основные фишки:
+    - JWT авторизация (access + refresh токены)
+    - Rate limiting чтобы боты не спамили
+    - Email верификация
+    - Загрузка картинок в AWS S3
+    - Система отзывов и рейтингов
+    - Жалобы на объявления
+    - Автоудаление старых объявлений через 48 часов
+
+    Сделано с душой и большим количеством кофе ☕
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Arizona Games Store API
+  version: "1.0"
+paths:
+  /ads:
+    get:
+      description: Возвращает список объявлений с фильтрацией и сортировкой. По умолчанию
+        возвращает 20 штук, можно подгружать дальше через offset
+      parameters:
+      - description: Категория
+        enum:
+        - house
+        - business
+        - vehicle
+        - security
+        - accs
+        - others
+        in: query
+        name: category
+        required: true
+        type: string
+      - description: Фильтр по серверу
+        in: query
+        name: server
+        type: string
+      - description: Сколько объявлений вернуть (по умолчанию 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Сколько пропустить для пагинации (по умолчанию 0)
+        in: query
+        name: offset
+        type: integer
+      - description: Сортировка
+        enum:
+        - date_desc
+        - date_asc
+        - price_desc
+        - price_asc
+        - views_desc
+        in: query
+        name: sort
+        type: string
+      - description: Фильтр по типу
+        enum:
+        - Продать
+        - Купить
+        - Сдать в аренду
+        in: query
+        name: type
+        type: string
+      - description: Фильтр по валюте
+        enum:
+        - VC
+        - $
+        - BTC
+        - EURO
+        - Договорная
+        in: query
+        name: currency
+        type: string
+      - description: Минимальная цена
+        in: query
+        name: price_min
+        type: number
+      - description: Максимальная цена
+        in: query
+        name: price_max
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список объявлений
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Не указана категория
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка БД
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Список объявлений
+      tags:
+      - Объявления
+  /ads/{id}:
+    delete:
+      description: Удаляет объявление. Доступно только автору
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Объявление удалено!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Это не твое объявление!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Объявление не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка удаления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить объявление
+      tags:
+      - Объявления
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные объявления. Доступно только автору объявления
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Объявление обновлено!
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Некорректные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Это не твое объявление!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Объявление не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить объявление
+      tags:
+      - Объявления
+  /ads/{id}/view:
+    post:
+      description: Увеличивает счетчик просмотров объявления. Вызывай когда пользователь
+        открывает карточку объявления
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Просмотр засчитан!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Объявление не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Записать просмотр
+      tags:
+      - Объявления
+  /ads/random:
+    get:
+      description: Возвращает 8 случайных объявлений для главной страницы. Каждый
+        раз разные!
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Массив случайных объявлений
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Что-то пошло не так
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Случайные объявления
+      tags:
+      - Объявления
+  /createnewads:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создает новое объявление с картинкой. Картинка загружается на AWS
+        S3. После создания объявление автоматически удалится через 48 часов (можно
+        продлить). Между созданиями объявлений нужно ждать 60 секунд
+      parameters:
+      - description: Сервер (ViceCity, Phoenix, и т.д.)
+        in: formData
+        name: server
+        required: true
+        type: string
+      - description: Название (макс. 25 символов)
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание (макс. 500 символов)
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Тип (Продать/Купить/Сдать в аренду)
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: Валюта (VC/$/BTC/EURO/Договорная)
+        in: formData
+        name: currency
+        required: true
+        type: string
+      - description: Цена
+        in: formData
+        name: price
+        required: true
+        type: number
+      - description: Категория (house/business/vehicle/security/accs/others)
+        in: formData
+        name: category
+        required: true
+        type: string
+      - description: Никнейм автора
+        in: formData
+        name: nickname
+        required: true
+        type: string
+      - description: Путь для сохранения картинки
+        in: formData
+        name: imagePath
+        required: true
+        type: string
+      - description: Изображение (макс. 10MB, разрешение 300x200 - 1920x1080)
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Лимит часов аренды (1-180)
+        in: formData
+        name: rentalHoursLimit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'Объявление создано! ID: 42'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Не хватает данных или картинка кривая
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "413":
+          description: Картинка слишком большая (макс. 10MB)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Подожди 60 секунд перед созданием нового объявления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка загрузки на S3 или БД
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать объявление
+      tags:
+      - Объявления
+  /feedback:
+    post:
+      consumes:
+      - application/json
+      description: Оставляет отзыв о продавце. Рейтинг от 1 до 5 звезд. Отзыв нужно
+        подтвердить продавцу, чтобы он отобразился
+      parameters:
+      - description: Данные отзыва
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Отзыв отправлен! Ждем подтверждения продавца
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Некорректный рейтинг или комментарий
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Нужна авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Ты уже оставлял отзыв этому продавцу
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сохранения
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Оставить отзыв
+      tags:
+      - Отзывы
+  /feedback/{id}/confirm:
+    put:
+      description: Подтверждает отзыв. Только продавец может подтвердить отзыв о себе.
+        После подтверждения рейтинг пересчитывается
+      parameters:
+      - description: ID отзыва
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Отзыв подтвержден! Твой рейтинг обновлен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Ты не можешь подтвердить этот отзыв
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Отзыв не найден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка подтверждения
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Подтвердить отзыв
+      tags:
+      - Отзывы
+  /feedback/{nickname}:
+    get:
+      description: Возвращает все отзывы о продавце
+      parameters:
+      - description: Никнейм продавца
+        in: path
+        name: nickname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список отзывов
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка загрузки
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Отзывы продавца
+      tags:
+      - Отзывы
+  /getadcount:
+    get:
+      description: 'Возвращает количество объявлений в категории. Нужно для отображения
+        "Всего объявлений: 420"'
+      parameters:
+      - description: Название категории
+        in: query
+        name: CategoryName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Количество объявлений
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "500":
+          description: Ошибка подсчета
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Счетчик объявлений
+      tags:
+      - Объявления
+  /listings/user/{nickname}:
+    get:
+      description: Возвращает все объявления конкретного пользователя
+      parameters:
+      - description: Никнейм пользователя
+        in: path
+        name: nickname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список объявлений пользователя
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Ошибка БД
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Объявления по нику
+      tags:
+      - Объявления
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя. Возвращает JWT токены (access для запросов
+        + refresh для продления сессии). Токены сохраняются в HTTP-only cookies для
+        безопасности
+      parameters:
+      - description: Никнейм и пароль
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Авторизация успешна! Добро пожаловать обратно
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Не хватает данных (никнейм или пароль)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Неверный никнейм или пароль, попробуй еще раз
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Слишком много попыток входа, подожди немного
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сервера при генерации токенов
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Вход в аккаунт
+      tags:
+      - Аутентификация
+  /logout:
+    post:
+      description: Выход из аккаунта. Удаляет refresh токен из БД и чистит cookies.
+        После этого все запросы будут отклонены, пока не залогинишься заново
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный выход! До встречи
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Выход
+      tags:
+      - Аутентификация
+  /profile/delete-background:
+    delete:
+      description: Удаляет фон профиля
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Фон удален!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка удаления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить фон
+      tags:
+      - Профиль
+  /profile/update-avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает новый аватар на S3. Макс. размер 5MB
+      parameters:
+      - description: Изображение аватара
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: URL нового аватара
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Файл не загружен или слишком большой
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка загрузки
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить аватар
+      tags:
+      - Профиль
+  /profile/update-background:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает новый фон для профиля на S3. Макс. размер 10MB
+      parameters:
+      - description: Изображение фона
+        in: formData
+        name: background
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: URL нового фона
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Файл не загружен или слишком большой
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка загрузки на S3
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить фон профиля
+      tags:
+      - Профиль
+  /profile/update-description:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет описание профиля. Макс. 500 символов
+      parameters:
+      - description: Описание
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Описание обновлено!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Описание слишком длинное
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить описание
+      tags:
+      - Профиль
+  /profile/update-email:
+    put:
+      consumes:
+      - application/json
+      description: Изменяет email пользователя. После изменения нужно будет заново
+        подтвердить email
+      parameters:
+      - description: Новый email
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email обновлен! Проверь почту для подтверждения
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный email
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Такой email уже используется
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить email
+      tags:
+      - Профиль
+  /profile/update-nickname:
+    put:
+      consumes:
+      - application/json
+      description: Изменяет никнейм пользователя. Макс. 20 символов
+      parameters:
+      - description: Новый никнейм
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Никнейм обновлен!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Никнейм слишком длинный или пустой
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Такой никнейм уже занят
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить никнейм
+      tags:
+      - Профиль
+  /profile/update-password:
+    put:
+      consumes:
+      - application/json
+      description: Изменяет пароль пользователя. Нужно ввести старый пароль для подтверждения
+      parameters:
+      - description: Старый и новый пароли
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пароль обновлен!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Новый пароль слишком короткий (мин. 8 символов)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Старый пароль неверный
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить пароль
+      tags:
+      - Профиль
+  /profile/update-telegram:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет Telegram контакт. Макс. 50 символов
+      parameters:
+      - description: Telegram
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Telegram обновлен!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Telegram слишком длинный
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить Telegram
+      tags:
+      - Профиль
+  /profile/update-theme:
+    put:
+      consumes:
+      - application/json
+      description: Меняет тему оформления (светлая/темная)
+      parameters:
+      - description: Тема
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Тема обновлена!
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка обновления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Изменить тему
+      tags:
+      - Профиль
+  /refresh:
+    post:
+      description: Обновляет access токен используя refresh токен. Вызывай этот эндпоинт
+        когда access токен истек (обычно через 3 минуты). Refresh токен живет 30 дней
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен обновлен! Можешь продолжать работать
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Refresh токен не найден, истек или невалидный. Нужно заново
+            залогиниться
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка генерации нового токена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить токен
+      tags:
+      - Аутентификация
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя. Сразу после регистрации на почту придет
+        код подтверждения. Пароль должен быть минимум 8 символов, иначе хакеры взломают
+        за 5 минут
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Аккаунт создан! Проверь почту и введи код подтверждения
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Не хватает данных или формат неправильный
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Такой ник или email уже занят, придумай другой
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Слишком много попыток, подожди немного
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Что-то сломалось на сервере, пишите в поддержку
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация
+      tags:
+      - Аутентификация
+  /reports:
+    post:
+      consumes:
+      - application/json
+      description: 'Отправляет жалобу на объявление. Причины: Мошенничество, Спам,
+        Порнография, и т.д. Жалобы проверяются модераторами'
+      parameters:
+      - description: Данные жалобы
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Жалоба отправлена! Мы её рассмотрим
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Не указана причина или описание слишком короткое
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Залогинься чтобы жаловаться
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Объявление не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка создания жалобы
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Пожаловаться на объявление
+      tags:
+      - Жалобы
+  /resend-code:
+    post:
+      consumes:
+      - application/json
+      description: Отправляет новый код подтверждения на email. Нужно если предыдущий
+        код истек (они живут 10 минут) или потерялся. Генерирует новый код и сразу
+        отправляет на почту
+      parameters:
+      - description: Email для отправки нового кода
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.ResendCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Новый код отправлен! Проверь почту (и спам тоже)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Email не найден или уже подтвержден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка отправки email
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Отправить код повторно
+      tags:
+      - Аутентификация
+  /verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Подтверждает email пользователя после регистрации. Нужно ввести
+        код который пришел на почту. После подтверждения сразу логинит пользователя
+        и выдает токены
+      parameters:
+      - description: Email и код подтверждения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email подтвержден! Добро пожаловать в Arizona Games Store
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Неверный код или он уже истек (коды живут 10 минут)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Регистрация заблокирована (превышен лимит с одного IP)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка создания аккаунта или генерации токенов
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Подтвердить email
+      tags:
+      - Аутентификация
+  /viewed-ads:
+    get:
+      description: Возвращает историю просмотренных объявлений пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список просмотренных объявлений
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Не авторизован
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка загрузки
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: История просмотров
+      tags:
+      - Просмотренное
+    post:
+      consumes:
+      - application/json
+      description: Добавляет объявление в историю просмотров пользователя
+      parameters:
+      - description: ID объявления
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Добавлено в историю
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Не указан ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Нужна авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сохранения
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Добавить в историю
+      tags:
+      - Просмотренное
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: 'Вставь сюда JWT токен в формате: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

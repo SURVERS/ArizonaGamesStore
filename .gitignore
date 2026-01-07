@@ -43,6 +43,8 @@ Thumbs.db
 *.test
 *.out
 go.work
+backend/main.exe
+backend/main
 
 # Uploads
 uploads/

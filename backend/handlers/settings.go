@@ -14,7 +14,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// UpdateNickname обработчик для обновления никнейма
+// UpdateNickname godoc
+// @Summary Изменить никнейм
+// @Description Изменяет никнейм пользователя. Макс. 20 символов
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Новый никнейм" example(nickname="NewNick123")
+// @Success 200 {object} map[string]string "Никнейм обновлен!"
+// @Failure 400 {object} map[string]string "Никнейм слишком длинный или пустой"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 409 {object} map[string]string "Такой никнейм уже занят"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-nickname [put]
 func UpdateNickname(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -89,7 +102,20 @@ func UpdateNickname(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Никнейм успешно обновлен"})
 }
 
-// UpdateEmail обработчик для обновления email
+// UpdateEmail godoc
+// @Summary Изменить email
+// @Description Изменяет email пользователя. После изменения нужно будет заново подтвердить email
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Новый email" example(email="new@arizona.rp")
+// @Success 200 {object} map[string]string "Email обновлен! Проверь почту для подтверждения"
+// @Failure 400 {object} map[string]string "Некорректный email"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 409 {object} map[string]string "Такой email уже используется"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-email [put]
 func UpdateEmail(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -147,7 +173,19 @@ func UpdateEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Email успешно обновлен"})
 }
 
-// UpdatePassword обработчик для обновления пароля
+// UpdatePassword godoc
+// @Summary Изменить пароль
+// @Description Изменяет пароль пользователя. Нужно ввести старый пароль для подтверждения
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Старый и новый пароли" example(old_password="OldPass123!" new_password="NewPass123!")
+// @Success 200 {object} map[string]string "Пароль обновлен!"
+// @Failure 400 {object} map[string]string "Новый пароль слишком короткий (мин. 8 символов)"
+// @Failure 401 {object} map[string]string "Старый пароль неверный"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-password [put]
 func UpdatePassword(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -214,7 +252,18 @@ func UpdatePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Пароль успешно обновлен"})
 }
 
-// UpdateTheme обработчик для обновления темы
+// UpdateTheme godoc
+// @Summary Изменить тему
+// @Description Меняет тему оформления (светлая/темная)
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Тема" example(theme="dark")
+// @Success 200 {object} map[string]string "Тема обновлена!"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-theme [put]
 func UpdateTheme(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -246,7 +295,19 @@ func UpdateTheme(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Тема успешно обновлена"})
 }
 
-// UpdateDescription обработчик для обновления описания профиля
+// UpdateDescription godoc
+// @Summary Изменить описание
+// @Description Обновляет описание профиля. Макс. 500 символов
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body map[string]string true "Описание" example(description="Активный продавец на Arizona RP")
+// @Success 200 {object} map[string]string "Описание обновлено!"
+// @Failure 400 {object} map[string]string "Описание слишком длинное"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка обновления"
+// @Router /profile/update-description [put]
 func UpdateDescription(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {
@@ -366,7 +427,19 @@ func containsDangerousPatterns(text string) bool {
 	return false
 }
 
-// UpdateProfileAvatar обработчик для обновления аватара
+// UpdateProfileAvatar godoc
+// @Summary Изменить аватар
+// @Description Загружает новый аватар на S3. Макс. размер 5MB
+// @Tags Профиль
+// @Security BearerAuth
+// @Accept multipart/form-data
+// @Produce json
+// @Param avatar formData file true "Изображение аватара"
+// @Success 200 {object} map[string]string "URL нового аватара"
+// @Failure 400 {object} map[string]string "Файл не загружен или слишком большой"
+// @Failure 401 {object} map[string]string "Не авторизован"
+// @Failure 500 {object} map[string]string "Ошибка загрузки"
+// @Router /profile/update-avatar [post]
 func UpdateProfileAvatar(c *gin.Context) {
 	nickname, exists := c.Get("nickname")
 	if !exists {

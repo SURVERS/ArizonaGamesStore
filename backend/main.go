@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "arizonagamesstore/backend/docs"
 	"arizonagamesstore/backend/database"
 	"arizonagamesstore/backend/handlers"
 	"arizonagamesstore/backend/middleware"
@@ -11,11 +12,43 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"log"
 
 	"github.com/joho/godotenv"
 )
+
+// @title Arizona Games Store API
+// @version 1.0
+// @description API для игрового маркетплейса Arizona RP. Здесь можно купить/продать/арендовать дома, бизнесы, транспорт и всякую другую всячину. Работает на 33 серверах, поддерживает несколько валют и умеет в рейтинги продавцов.
+// @description
+// @description Основные фишки:
+// @description - JWT авторизация (access + refresh токены)
+// @description - Rate limiting чтобы боты не спамили
+// @description - Email верификация
+// @description - Загрузка картинок в AWS S3
+// @description - Система отзывов и рейтингов
+// @description - Жалобы на объявления
+// @description - Автоудаление старых объявлений через 48 часов
+// @description
+// @description Сделано с душой и большим количеством кофе ☕
+
+// @contact.name Поддержка
+// @contact.email support@arizonagamesstore.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
+// @schemes http https
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Вставь сюда JWT токен в формате: Bearer {token}
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -61,6 +94,8 @@ func main() {
 	router.Use(middleware.RequestTimeout(30 * time.Second))
 
 	router.Static("/uploads", "./uploads")
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.POST("/api/register", middleware.RateLimitRegister(), services.RegisterAccount)
 	router.POST("/api/login", middleware.RateLimitLogin(), services.Login)

@@ -12,6 +12,15 @@ type AdCount struct {
 	CategoryName string `form:"CategoryName" binding:"required"`
 }
 
+// GetAdCount godoc
+// @Summary Счетчик объявлений
+// @Description Возвращает количество объявлений в категории. Нужно для отображения "Всего объявлений: 420"
+// @Tags Объявления
+// @Produce json
+// @Param CategoryName query string true "Название категории"
+// @Success 200 {object} map[string]int "Количество объявлений"
+// @Failure 500 {object} map[string]string "Ошибка подсчета"
+// @Router /getadcount [get]
 func GetAdCount(c *gin.Context) {
 	var req AdCount
 	if err := c.ShouldBind(&req); err != nil {
