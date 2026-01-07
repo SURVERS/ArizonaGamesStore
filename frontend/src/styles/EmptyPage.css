@@ -1,0 +1,28 @@
+.empty-page {
+  min-height: 100vh;
+  background: #18181A;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 70px;
+}
+
+.empty-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.empty-content h1 {
+  font-size: 32px;
+  color: #DF3535;
+  margin-bottom: 15px;
+}
+
+.empty-content p {
+  font-size: 16px;
+  color: #999;
+}

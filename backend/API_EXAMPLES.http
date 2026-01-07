@@ -1,0 +1,26 @@
+### Регистрация нового пользователя
+POST http://localhost:8080/api/register
+Content-Type: application/json
+
+{
+  "nickname": "testuser",
+  "password": "MyP@ssw0rd!#$"
+}
+
+### Логин
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "nickname": "testuser",
+  "password": "MyP@ssw0rd!#$"
+}
+
+### Получение информации о текущем пользователе (защищенный эндпоинт)
+GET http://localhost:8080/api/me
+
+### Обновление access токена
+POST http://localhost:8080/api/refresh
+
+### Выход из системы
+POST http://localhost:8080/api/logout
