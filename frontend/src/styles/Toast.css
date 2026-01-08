@@ -1,0 +1,111 @@
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 300px;
+  max-width: 400px;
+  padding: 16px 20px;
+  background: #2A2A2E;
+  border: 1px solid #474747;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.6);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.toast-success {
+  border-left: 4px solid #4CAF50;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(46, 125, 50, 0.08) 100%);
+  animation: slideIn 0.3s ease-out, pulse 1.5s ease-in-out;
+}
+
+.toast-error {
+  border-left: 4px solid #DF3535;
+  background: linear-gradient(135deg, rgba(223, 53, 53, 0.1) 0%, rgba(198, 40, 40, 0.05) 100%);
+}
+
+.toast-loading {
+  border-left: 4px solid #3E3EDF;
+  background: linear-gradient(135deg, rgba(62, 62, 223, 0.1) 0%, rgba(48, 48, 180, 0.05) 100%);
+}
+
+.toast-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  animation: iconPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes iconPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.toast-message {
+  flex: 1;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+}

@@ -1,0 +1,104 @@
+.category-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #000000 0%, #1a0a0a 50%, #2d0f1f 100%);
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.category-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-btn {
+  background: linear-gradient(135deg, #dc143c 0%, #b8102f 100%);
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 40px;
+  box-shadow: 0 5px 15px rgba(220, 20, 60, 0.3);
+}
+
+.back-btn:hover {
+  background: linear-gradient(135deg, #ff1744 0%, #dc143c 100%);
+  transform: translateX(-5px);
+  box-shadow: 0 5px 20px rgba(220, 20, 60, 0.5);
+}
+
+.category-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.category-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.category-page-title {
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 15px;
+}
+
+.category-page-description {
+  font-size: 18px;
+  color: #aaa;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.coming-soon {
+  background: linear-gradient(135deg, rgba(26, 10, 10, 0.8) 0%, rgba(45, 15, 31, 0.8) 100%);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  border: 2px solid rgba(220, 20, 60, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.coming-soon-icon {
+  font-size: 100px;
+  margin-bottom: 30px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.coming-soon h2 {
+  font-size: 36px;
+  color: #dc143c;
+  margin-bottom: 15px;
+}
+
+.coming-soon p {
+  font-size: 18px;
+  color: #999;
+}
